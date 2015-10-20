@@ -38,7 +38,7 @@
         // validate url, if not valid or external, return false
         if (0) return false;
 
-        self.trigger('before_change',[self.properties.last_element]);
+        self.trigger('before_change',self.properties.last_element);
 
         var ready = false,
             timeout = false,
@@ -75,7 +75,7 @@
                 }
 
                 //TODO make sure returns full url? useful for google analytics? check if needed.
-                self.trigger('after_change',[url,self.properties.last_element]);
+                self.trigger('after_change',url,self.properties.last_element);
             };
 
         if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
@@ -147,16 +147,15 @@
         this.initiate();
     };
 
-    PageBlend.prototype.trigger = function(event,params){ var self = this;
-        if (!(params instanceof Array)) params = [];
-        var event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : '_default';
+    PageBlend.prototype.trigger = function(event){ var self = this;
+        var args = Array.prototype.slice.call(arguments,1), event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : '_default';
         if (self.properties.event_listeners[event_type]) {
             for (var current_event_name in self.properties.event_listeners[event_type]) {
                 if (self.properties.event_listeners[event_type].hasOwnProperty(current_event_name)
                     && (event_name === false || event_name === current_event_name)) {
                     for (var i=0; i<self.properties.event_listeners[event_type][current_event_name].length; i++) {
                         if (self.properties.event_listeners[event_type][current_event_name][i]) {
-                            self.properties.event_listeners[event_type][current_event_name][i].apply(self,params);
+                            self.properties.event_listeners[event_type][current_event_name][i].apply(self,args);
                         }
                     }
                 }
