@@ -1,0 +1,25 @@
+.page-blend-loader {
+    display:none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background:#fff;
+    z-index:99999;
+}
+
+.page-blend-loader div {
+    position:absolute;
+    width:100px;
+    text-align:center;
+    height:40px;
+    line-height:40px;
+    font-size:20px;
+    font-weight:bold;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+    margin:auto;
+}

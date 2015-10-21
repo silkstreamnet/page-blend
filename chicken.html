@@ -32,16 +32,8 @@
                 $page_blend_loader.animate({opacity:0},300,function(){
                     $page_blend_loader.css('display','none');
                 });
-
                 // reinitialise things here
                 $(page_container).attr('class',$(response_container).attr('class'));
-
-                // google analytics
-                if (typeof _gaq !== "undefined" && _gaq !== null) {
-                    _gaq.push(['_trackPageview', window.location.pathname]);
-                } else if( typeof ga == 'function' ){
-                    ga('send', 'pageview', window.location.pathname);
-                }
             });
         }
     })();

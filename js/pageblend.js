@@ -77,12 +77,14 @@
             initiated:false,
             event_namespace:'PageBlend',
             event_listeners:{},
-            delay:600,
-            timeout:10000, //TODO needs functionality adding
+            images_cache:{},
             processing:false,
             element:false,
-            url:'',
-            images_cache:{},
+            url:''
+        };
+        this.settings = {
+            delay:600,
+            timeout:10000, //TODO needs functionality adding
             wait_for_images:true
         };
 
@@ -107,13 +109,10 @@
                 return false;
             }
         }
-        else {
-            //TODO if not a full url, prepend the website's domain (need to consider urls starting with / for absolute and without / for relative)
-        }
 
 
         if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
-        //TODO make sure returns full url? useful for google analytics? check if needed.
+
         self.properties.url = url;
 
         // It is possible to change the url with this event before the ajax request. Use "this.properties.url"
@@ -126,7 +125,7 @@
             timer = setTimeout(function(){
                 timeout = true;
                 if (ready) ready();
-            },self.properties.delay),
+            },self.settings.delay),
             process_response = function(response,status){
                 var error = true;
 
@@ -144,7 +143,6 @@
 
                     if (!$current_target.length || !$response_target.length) {
                         $current_target = $('body').eq(0);
-                        //$response_target = $response.find('body').eq(0);
                         $response_target = $response_body;
                     }
 
@@ -160,7 +158,7 @@
                             self.trigger('after_change','success',url,$response_target.get(0));
                         };
 
-                        if (self.properties.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
+                        if (self.settings.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
                         else complete_change();
                     }
                     else {
