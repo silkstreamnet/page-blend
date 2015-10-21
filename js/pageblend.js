@@ -69,7 +69,7 @@
                 handler();
             }
         },
-        history_support = false;
+        history_support = (!!window.history && !!window.history.replaceState);
 
     var PageBlend = function(){
         this.properties = {
@@ -100,17 +100,23 @@
 
         // validate url, if not valid or external, return false
         // permits a https call when on http but not the other way around.
-        if (url.match(/^http|https:\/\//)
-            && !url.match(new RegExp('^'+regexEscape(origin)))
-            && !url.match(new RegExp('^'+regexEscape(origin.replace(/^https:\/\//,'http://')))))
-            return false;
+        if (url.match(/^http|https:\/\//)) {
+            if (!url.match(new RegExp('^'+regexEscape(origin)))
+                && !url.match(new RegExp('^'+regexEscape(origin.replace(/^http:\/\//,'https://'))))) {
+                return false;
+            }
+        }
+        else {
+            //TODO if not a full url, prepend the website's domain (need to consider urls starting with / for absolute and without / for relative)
+        }
+
 
         if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
         //TODO make sure returns full url? useful for google analytics? check if needed.
         self.properties.url = url;
 
         // It is possible to change the url with this event before the ajax request. Use "this.properties.url"
-        self.trigger('before_change',url,self.properties.element);
+        self.trigger('before_change',self.properties.url,self.properties.element);
 
         var ready = false,
             timeout = false,
@@ -137,28 +143,25 @@
                     }
 
                     if ($current_target.length && $response_target.length) {
-
-                        if (self.properties.wait_for_images) {
-                            whenImagesLoaded($response_target.html(),function(){
-                                $current_target.html($response_target.html());
-                                self.trigger('after_change','success',url,self.properties.element);
-                                self.properties.element = false;
-                                self.properties.url = '';
-                            });
-                        }
-                        else {
+                        var complete_change = function(){
                             $current_target.html($response_target.html());
                             self.trigger('after_change','success',url,self.properties.element);
                             self.properties.element = false;
                             self.properties.url = '';
-                        }
+                        };
 
-                        error = false;
+                        if (self.properties.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
+                        else complete_change();
                     }
+                    else {
+                        window.location.href = self.properties.url;
+                    }
+
+                    error = false;
                 }
 
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
-                    self.trigger('after_change','error',url,self.properties.element);
+                    self.trigger('after_change','error',self.properties.url,self.properties.element);
                 }
             };
 
