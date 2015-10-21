@@ -242,7 +242,7 @@
     };
 
     PageBlend.prototype.trigger = function(event){ var self = this;
-        var args = Array.prototype.slice.call(arguments,1), event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : '_default';
+        var args = Array.prototype.slice.call(arguments,1), event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : false;
         if (self.properties.event_listeners[event_type]) {
             for (var current_event_name in self.properties.event_listeners[event_type]) {
                 if (self.properties.event_listeners[event_type].hasOwnProperty(current_event_name)
