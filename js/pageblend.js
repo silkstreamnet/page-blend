@@ -19,7 +19,7 @@
             return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         },
         whenImagesLoaded = function(html,handler) {
-
+            //TODO check background images?
             var image_cache = {},
                 images_pending = 0;
 
