@@ -118,67 +118,76 @@
         // It is possible to change the url with this event before the ajax request. Use "this.properties.url"
         self.trigger('before_change',self.properties.url,self.properties.element);
 
+        url = self.properties.url;
+
         var ready = false,
             timeout = false,
             timer = setTimeout(function(){
                 timeout = true;
                 if (ready) ready();
             },self.properties.delay),
-            process_response = function(jqxhr,status){
+            process_response = function(response,status){
                 var error = true;
 
-                if (status === 'success' && !!jqxhr.responseText) {
-                    var $response = $(jqxhr.responseText),
+                if (status === 'success' && !!response) {
+                    response = response.replace('<body','<div').replace('</body','</div');
+                    var $response = $(response),
+                        $response_body = $response.filter('div:first').eq(0),
                         $current_target = (target) ? $(target).eq(0) : {length:0},
-                        $response_target = (target) ? $response.find(target).eq(0) : {length:0};
+                        $response_target = (target) ? $response_body.find(target).eq(0) : {length:0};
 
                     if (!$current_target.length || !$response_target.length) {
                         $current_target = $('.page-blend-container').eq(0);
-                        $response_target = $response.find('.page-blend-container').eq(0);
+                        $response_target = $response_body.find('.page-blend-container').eq(0);
                     }
 
                     if (!$current_target.length || !$response_target.length) {
-                        $current_target = $('body');
-                        $response_target = $response.find('body').eq(0);
+                        $current_target = $('body').eq(0);
+                        //$response_target = $response.find('body').eq(0);
+                        $response_target = $response_body;
                     }
 
                     if ($current_target.length && $response_target.length) {
                         var complete_change = function(){
+                            var state = history.state,
+                                title = $response.filter('title').eq(0).text() || document.title;
+
+                            window.history.replaceState(state,title,url);
                             $current_target.html($response_target.html());
-                            self.trigger('after_change','success',url,self.properties.element);
                             self.properties.element = false;
                             self.properties.url = '';
+                            self.trigger('after_change','success',url,self.properties.element);
                         };
 
                         if (self.properties.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
                         else complete_change();
                     }
                     else {
-                        window.location.href = self.properties.url;
+                        //window.location.href = url;
                     }
 
                     error = false;
                 }
 
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
-                    self.trigger('after_change','error',self.properties.url,self.properties.element);
+                    self.trigger('after_change','error',url,self.properties.element);
                 }
             };
 
         self.properties.processing = $.ajax({
-            url:self.properties.url,
+            url:url,
             type:method,
             data:params,
-            complete:function(jqxhr,status){
-                if (timeout) {
-                    process_response(jqxhr,status);
-                }
-                else {
-                    ready = function(){
-                        process_response(jqxhr,status);
-                    };
-                }
-
+            dataType:'html',
+            async:true,
+            success:function(response){
+                if (timeout) process_response(response,'success');
+                else ready = function(){process_response(response,'success');};
+                self.properties.processing = false;
+            },
+            error:function(jqXHR){
+                if (timeout) process_response(false,'error');
+                else ready = function(){process_response(false,'error');};
                 self.properties.processing = false;
             }
         });
