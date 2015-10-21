@@ -1,20 +1,74 @@
 (function(window,$,initiate){ 'use strict';
 
     var serializeObject = function($element) {
-        var o = {};
-        var a = $element.serializeArray();
-        $.each(a, function() {
-            if (o[this.name] !== undefined) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
+            var o = {};
+            var a = $element.serializeArray();
+            $.each(a, function() {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
                 }
-                o[this.name].push(this.value || '');
-            } else {
-                o[this.name] = this.value || '';
+            });
+            return o;
+        },
+        regexEscape = function(string) {
+            return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        },
+        whenImagesLoaded = function(html,handler) {
+
+            var image_cache = {},
+                images_pending = 0;
+
+            $('<div/>').html(html).find('img').each(function(){
+                var image = this,
+                    $image = $(this);
+
+                if (image.src) {
+                    var image_ready = ((image.complete && image.naturalWidth >= 0) || image.readyState === 4 || image.readyState === 'complete');
+                    if (!image_ready && !image_cache[image.src]) {
+                        image_cache[image.src] = {origin:image,$origin:$image,proxy:false};
+                    }
+                }
+            });
+
+            var proxy_image_event = function(){
+                images_pending--;
+                if (images_pending == 0) {
+                    handler();
+                }
+            };
+
+            for (var image_cache_src in image_cache) {
+                if (image_cache.hasOwnProperty(image_cache_src) && !image_cache[image_cache_src].proxy) {
+                    (function(image_cache_src){
+                        var proxy_image = new Image();
+                        images_pending++;
+                        image_cache[image_cache_src].proxy = proxy_image;
+                        proxy_image.onload = function(){
+                            if (image_cache[image_cache_src].proxy !== true) {
+                                image_cache[image_cache_src].proxy = true;
+                                proxy_image_event();
+                            }
+                        };
+                        proxy_image.onerror = function(){
+                            if (image_cache[image_cache_src].proxy !== true) {
+                                image_cache[image_cache_src].proxy = true;
+                                proxy_image_event();
+                            }
+                        };
+                        proxy_image.src = image_cache_src;
+                    })(image_cache_src);
+                }
             }
-        });
-        return o;
-    };
+
+            if (images_pending == 0) {
+                return true;
+            }
+        };
 
     var PageBlend = function(){
         this.properties = {
@@ -22,8 +76,12 @@
             event_namespace:'PageBlend',
             event_listeners:{},
             delay:600,
+            timeout:10000, //TODO needs functionality adding
             processing:false,
-            last_element:false
+            element:false,
+            url:'',
+            images_cache:{},
+            wait_for_images:true
         };
 
         if (initiate) this.initiate();
@@ -35,10 +93,21 @@
         target = target || false;
         params = params || {};
 
-        // validate url, if not valid or external, return false
-        if (0) return false;
+        var origin = window.location.protocol+'//'+window.location.host;
 
-        self.trigger('before_change',self.properties.last_element);
+        // validate url, if not valid or external, return false
+        // permits a https call when on http but not the other way around.
+        if (url.match(/^http|https:\/\//)
+            && !url.match(new RegExp('^'+regexEscape(origin)))
+            && !url.match(new RegExp('^'+regexEscape(origin.replace(/^https:\/\//,'http://')))))
+            return false;
+
+        if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
+        //TODO make sure returns full url? useful for google analytics? check if needed.
+        self.properties.url = url;
+
+        // It is possible to change the url with this event before the ajax request. Use "this.properties.url"
+        self.trigger('before_change',url,self.properties.element);
 
         var ready = false,
             timeout = false,
@@ -46,6 +115,7 @@
                 timeout = true;
                 if (ready) ready();
             },self.properties.delay),
+            $page_blend_default = $('.page-blend-default').eq(0),
             process_response = function(jqxhr,status){
                 var error = true;
 
@@ -60,10 +130,23 @@
 
                     if ($current_target.length && $response_target.length) {
 
-                        //TODO add images loaded listener
-
                         //TODO when images loaded, replace html and hide loading
-                        $current_target.html($response_target.html());
+
+                        if (self.properties.wait_for_images) {
+                            whenImagesLoaded($response_target.html(),function(){
+                                $current_target.html($response_target.html());
+                                self.trigger('after_change','success',url,self.properties.element);
+                                self.properties.element = false;
+                                self.properties.url = '';
+                            });
+                        }
+                        else {
+                            $current_target.html($response_target.html());
+                            self.trigger('after_change','success',url,self.properties.element);
+                            self.properties.element = false;
+                            self.properties.url = '';
+                        }
+
 
                         error = false;
                     }
@@ -72,18 +155,14 @@
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
                     //TODO show that there was an error
                     //TODO add button to hide loading
+                    self.trigger('after_change','error',url,self.properties.element);
                 }
-
-                //TODO make sure returns full url? useful for google analytics? check if needed.
-                self.trigger('after_change',url,self.properties.last_element);
             };
-
-        if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
 
         // show loading
 
         self.properties.processing = $.ajax({
-            url:url,
+            url:self.properties.url,
             type:method,
             data:params,
             complete:function(jqxhr,status){
@@ -113,7 +192,7 @@
                         disable = $a.data('pb-disable'),
                         target = $a.data('pb-target');
 
-                    self.properties.last_element = this;
+                    self.properties.element = this;
 
                     if (!disable && url && self.process(url,target)) {
                         e.preventDefault();
@@ -126,7 +205,7 @@
                         disable = $form.data('pb-disable'),
                         target = $form.data('pb-target');
 
-                    self.properties.last_element = this;
+                    self.properties.element = this;
 
                     if (!disable && url && self.process(url,target,method,serializeObject($form))) {
                         e.preventDefault();
