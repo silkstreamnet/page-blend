@@ -157,21 +157,21 @@
                             $current_target.html($response_target.html());
                             self.properties.element = false;
                             self.properties.url = '';
-                            self.trigger('after_change','success',url,self.properties.element);
+                            self.trigger('after_change','success',url,$response_target.get(0));
                         };
 
                         if (self.properties.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
                         else complete_change();
                     }
                     else {
-                        //window.location.href = url;
+                        window.location.href = url;
                     }
 
                     error = false;
                 }
 
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
-                    self.trigger('after_change','error',url,self.properties.element);
+                    self.trigger('after_change','error',url);
                 }
             };
 
