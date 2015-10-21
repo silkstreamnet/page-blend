@@ -68,7 +68,8 @@
             if (images_pending == 0) {
                 handler();
             }
-        };
+        },
+        history_support = false;
 
     var PageBlend = function(){
         this.properties = {
@@ -88,6 +89,8 @@
     };
 
     PageBlend.prototype.process = function(url,target,method,params){ var self = this;
+        if (!history_support) return false;
+
         url = url || '';
         method = (method && method.toUpperCase() === 'POST') ? 'POST' : 'GET';
         target = target || false;
@@ -181,6 +184,7 @@
     };
 
     PageBlend.prototype.initiate = function(){ var self = this;
+        if (!history_support) return;
         if (!self.properties.initiated) {
             // add event listeners
             $('html')
