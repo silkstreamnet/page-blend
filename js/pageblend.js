@@ -66,7 +66,7 @@
             }
 
             if (images_pending == 0) {
-                return true;
+                handler();
             }
         };
 
@@ -115,22 +115,25 @@
                 timeout = true;
                 if (ready) ready();
             },self.properties.delay),
-            $page_blend_default = $('.page-blend-default').eq(0),
             process_response = function(jqxhr,status){
                 var error = true;
 
                 if (status === 'success' && !!jqxhr.responseText) {
-                    var $jqxhr = $(jqxhr),
+                    var $response = $(jqxhr.responseText),
                         $current_target = (target) ? $(target).eq(0) : {length:0},
-                        $response_target = (target) ? $jqxhr.find(target).eq(0) : {length:0};
+                        $response_target = (target) ? $response.find(target).eq(0) : {length:0};
 
-                    if (!$current_target.length) $current_target = $('body');
-                    if (!$response_target.length) $response_target = $jqxhr.find('body');
-                    if (!$response_target.length) $response_target = $jqxhr.closest('body');
+                    if (!$current_target.length || !$response_target.length) {
+                        $current_target = $('.page-blend-container').eq(0);
+                        $response_target = $response.find('.page-blend-container').eq(0);
+                    }
+
+                    if (!$current_target.length || !$response_target.length) {
+                        $current_target = $('body');
+                        $response_target = $response.find('body').eq(0);
+                    }
 
                     if ($current_target.length && $response_target.length) {
-
-                        //TODO when images loaded, replace html and hide loading
 
                         if (self.properties.wait_for_images) {
                             whenImagesLoaded($response_target.html(),function(){
@@ -147,19 +150,14 @@
                             self.properties.url = '';
                         }
 
-
                         error = false;
                     }
                 }
 
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
-                    //TODO show that there was an error
-                    //TODO add button to hide loading
                     self.trigger('after_change','error',url,self.properties.element);
                 }
             };
-
-        // show loading
 
         self.properties.processing = $.ajax({
             url:self.properties.url,
