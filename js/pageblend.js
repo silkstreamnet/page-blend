@@ -39,6 +39,7 @@
                 images_pending--;
                 if (images_pending == 0) {
                     handler();
+                    image_cache = null;
                 }
             };
 
@@ -49,14 +50,14 @@
                         images_pending++;
                         image_cache[image_cache_src].proxy = proxy_image;
                         proxy_image.onload = function(){
-                            if (image_cache[image_cache_src].proxy !== true) {
-                                image_cache[image_cache_src].proxy = true;
+                            if (image_cache) {
+                                delete image_cache[image_cache_src];
                                 proxy_image_event();
                             }
                         };
                         proxy_image.onerror = function(){
-                            if (image_cache[image_cache_src].proxy !== true) {
-                                image_cache[image_cache_src].proxy = true;
+                            if (image_cache) {
+                                delete image_cache[image_cache_src];
                                 proxy_image_event();
                             }
                         };
@@ -256,14 +257,14 @@
         }
     };
 
-    PageBlend.prototype.on = function(event,handler){
+    PageBlend.prototype.on = function(event,handler){ var self = this;
         var event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : '_default';
         if (!self.properties.event_listeners[event_type]) self.properties.event_listeners[event_type] = {};
         if (!self.properties.event_listeners[event_type][event_name]) self.properties.event_listeners[event_type][event_name] = [];
         self.properties.event_listeners[event_type][event_name].push(handler);
     };
 
-    PageBlend.prototype.off = function(event,handler){
+    PageBlend.prototype.off = function(event,handler){ var self = this;
         var event_parts = event.split('.',2), event_type = event_parts[0], event_name = (event_parts[1]) ? event_parts[1] : false;
         if (self.properties.event_listeners[event_type]) {
             for (var current_event_name in self.properties.event_listeners[event_type]) {
