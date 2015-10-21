@@ -18,12 +18,12 @@
         regexEscape = function(string) {
             return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         },
-        whenImagesLoaded = function(html,handler) {
+        whenImagesLoaded = function($container,handler) {
             //TODO check background images?
             var image_cache = {},
                 images_pending = 0;
 
-            $('<div/>').html(html).find('img').each(function(){
+            $container.find('img').each(function(){
                 var image = this,
                     $image = $(this);
 
@@ -155,10 +155,10 @@
                             $current_target.html($response_target.html());
                             self.properties.element = false;
                             self.properties.url = '';
-                            self.trigger('after_change','success',url,$response_target.get(0));
+                            self.trigger('after_change','success',url,$response_target.get(0),$current_target.get(0));
                         };
 
-                        if (self.settings.wait_for_images) whenImagesLoaded($response_target.html(),complete_change);
+                        if (self.settings.wait_for_images) whenImagesLoaded($response_target,complete_change);
                         else complete_change();
                     }
                     else {
