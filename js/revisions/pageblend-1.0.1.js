@@ -129,7 +129,7 @@
             process_response = function(response,status){
                 var error = true;
 
-                if (status === 'success' && !!response) {
+                if (!!response) {
                     response = response.replace('<body','<div').replace('</body','</div');
                     var $response = $(response),
                         $response_body = $response.filter('div:first').eq(0),
@@ -156,7 +156,7 @@
                             $current_target.html($response_target.html());
                             self.properties.element = false;
                             self.properties.url = '';
-                            self.trigger('after_change','success',url,$response_target.get(0),$current_target.get(0));
+                            self.trigger('after_change',status,url,$response_target.get(0),$current_target.get(0));
                         };
 
                         if (self.settings.wait_for_images) whenImagesLoaded($response_target,complete_change);
@@ -170,7 +170,7 @@
                 }
 
                 if (error) { //error (notmodified, nocontent, error, timeout, abort, parseerror)
-                    self.trigger('after_change','error',url);
+                    self.trigger('after_change',status,url,false,false);
                 }
             };
 
@@ -180,14 +180,9 @@
             data:params,
             dataType:'html',
             async:true,
-            success:function(response){
-                if (timeout) process_response(response,'success');
-                else ready = function(){process_response(response,'success');};
-                self.properties.processing = false;
-            },
-            error:function(jqXHR){
-                if (timeout) process_response(false,'error');
-                else ready = function(){process_response(false,'error');};
+            complete:function(jqXHR,textStatus) {
+                if (timeout) process_response(jqXHR.responseText,textStatus);
+                else ready = function(){process_response(jqXHR.responseText,textStatus);};
                 self.properties.processing = false;
             }
         });

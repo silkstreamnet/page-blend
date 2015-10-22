@@ -3,6 +3,7 @@
 - Document title now fully changes
 - Added all parents data attributes check
 - Changes to how it gets
+- Changes to better support error handling
 
 === 1.0.0 ===
 - Creation
