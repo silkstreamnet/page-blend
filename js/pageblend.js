@@ -211,7 +211,7 @@
 
                     self.properties.element = this;
 
-                    if (!disable && url && self.process(url,target)) {
+                    if (!disable && url && !url.match(/^(?:javascript:|#)/) && self.process(url,target)) {
                         e.preventDefault();
                     }
                 })

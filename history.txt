@@ -4,6 +4,7 @@
 - Added all parents data attributes check
 - Changes to how it gets
 - Changes to better support error handling
+- No longer tries to apply to anchor urls that start with "javascript:" or "#"
 
 === 1.0.0 ===
 - Creation
