@@ -1,3 +1,7 @@
+=== 1.0.2 ===
+- Added popstate event listener for client back and forward use
+- Can now modify the target property on before change
+
 === 1.0.1 ===
 - Changed replaceState to pushState (support back button)
 - Document title now fully changes
