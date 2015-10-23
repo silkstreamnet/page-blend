@@ -31,6 +31,8 @@
                 $page_blend_loader.css('display','block').animate({opacity:1},300);
             });
             $.PageBlend.on('after_change.global',function(status,url,response_container,page_container){
+                $(window).scrollTop(0);
+                
                 // hide loader
                 $page_blend_loader.animate({opacity:0},300,function(){
                     $page_blend_loader.css('display','none');
