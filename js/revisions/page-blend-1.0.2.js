@@ -250,7 +250,7 @@
         }
     };
 
-    PageBlend.prototype.clear = function(){ var self = this;
+    PageBlend.prototype.uninitiate = function(){ var self = this;
         $('html').off('.'+self.properties.event_namespace);
         $(window).off('.'+self.properties.event_namespace);
         self.properties.initiated = false;
