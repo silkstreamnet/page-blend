@@ -112,7 +112,6 @@
             }
         }
 
-
         if (self.properties.processing && self.properties.processing.abort) self.properties.processing.abort();
 
         self.properties.url = url;
@@ -152,7 +151,7 @@
 
                     if ($current_target.length && $response_target.length) {
                         var complete_change = function(){
-                            var state = {target:target},
+                            var state = {target:target,source:'PageBlend'},
                                 title = $response.filter('title').eq(0).text() || document.title;
 
                             document.title = title;
@@ -242,7 +241,9 @@
                 });
 
             $(window).on('popstate.'+self.properties.event_namespace,function(e){
-                self.process(window.location.href,(e.originalEvent.state && e.originalEvent.state.target ? e.originalEvent.state.target : false),false,false,false);
+                if (e.originalEvent.state && e.originalEvent.state.source === 'PageBlend') {
+                    self.process(window.location.href,(e.originalEvent.state.target ? e.originalEvent.state.target : false),false,false,false);
+                }
             });
 
             self.properties.initiated = true;
