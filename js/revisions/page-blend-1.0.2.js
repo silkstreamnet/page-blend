@@ -257,7 +257,7 @@
     };
 
     PageBlend.prototype.reinitiate = function(){
-        this.clear();
+        this.uninitiate();
         this.initiate();
     };
 
