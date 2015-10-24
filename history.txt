@@ -1,3 +1,7 @@
+=== 1.0.3 ===
+- Fixed issue with first load page not being a part of history state
+- Can now chain functions apart from .process()
+
 === 1.0.2 ===
 - Added popstate event listener for client back and forward use
 - Can now modify the target property on before change
