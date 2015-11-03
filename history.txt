@@ -1,3 +1,7 @@
+=== 1.0.4 ===
+- Fixed target parameter was not working
+- Added fallback for process function in case history API is not supported
+
 === 1.0.3 ===
 - Fixed issue with first load page not being a part of history state
 - Can now chain functions apart from .process()
