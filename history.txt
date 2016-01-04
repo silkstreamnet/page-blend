@@ -1,6 +1,7 @@
 === 1.0.5 ===
 - Added new setting: default_target. Specify jQuery selector string for the default target.
 - Changed .process() parameters to .process(url,method,params,target,push).
+- Updated fallback to use location.assign and location.replace where appropriate.
 
 === 1.0.4 ===
 - Fixed target parameter was not working

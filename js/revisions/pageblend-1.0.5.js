@@ -1,4 +1,4 @@
-(function(window,$,initiate){ 'use strict';
+(function(window,document,$,initiate){ 'use strict';
 
     var serializeObject = function($element) {
             var o = {};
@@ -96,7 +96,14 @@
 
     PageBlend.prototype.process = function(url,method,params,target,push){ var self = this;
         if (!history_support) {
-            if (url) window.location.href = url;
+            if (url) {
+                if (push) {
+                    window.location.assign(url);
+                }
+                else {
+                    window.location.replace(url);
+                }
+            }
             return false;
         }
 
@@ -171,7 +178,12 @@
                         else complete_change();
                     }
                     else {
-                        window.location.href = url;
+                        if (push) {
+                            window.location.assign(url);
+                        }
+                        else {
+                            window.location.replace(url);
+                        }
                     }
 
                     error = false;
@@ -264,7 +276,7 @@
                     state_changed = true;
                 }
                 if (state_changed) {
-                    window.history.replaceState(existing_state,document.title,document.location.href);
+                    window.history.replaceState(existing_state,document.title,window.location.href);
                 }
             }
 
@@ -334,4 +346,4 @@
 
     $.PageBlend = new PageBlend();
 
-})(window,jQuery,true);
+})(window,document,jQuery,true);
