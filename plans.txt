@@ -1,0 +1,1 @@
+- Add exceptions setting/option where you can specify regular expression(s) to avoid and not set PageBlend on.
